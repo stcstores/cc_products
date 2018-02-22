@@ -10,5 +10,5 @@ def get_product(product_id):
 
 
 def get_range(range_id):
-    product_range = CCAPI.get_range(range_id)
+    product_range = ProductRange(CCAPI.get_range(range_id))
     return product_range
