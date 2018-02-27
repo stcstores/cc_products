@@ -1,57 +1,93 @@
-import datetime
-
 from ccapi import CCAPI
 
-from . import exceptions
 
-
-class ProductOptions:
+class OptionList:
 
     def has_option(self, option_name):
         if option_name in self.names:
             return True
         return False
 
+    @property
+    def names(self):
+        return [o.name for o in self.options]
+
     def __contains__(self, key): return key in self.names
 
     def __len__(self): return len(self.names)
 
 
-class VariationOptions(ProductOptions):
+class VariationOptions(OptionList):
 
-    def __init__(self, options, product, product_range):
-        self.options = options
+    def __init__(self, product, product_range):
+        self._options = None
         self.product = product
         self.product_range = product_range
 
     def __getitem__(self, key):
         if self.product_has_option(key):
-            return self.options[key].value
+            return self.names[key].value
         return None
 
     def __setitem__(self, key, value):
+        value = str(value)
         if self.product_has_option(key):
-            self.product.product.set_option_value(key, str(value), create=True)
-            self.options[key].value.value = str(value)
-        raise exceptions.ProductOptionNotSetForProduct(key)
+            option = self.names[key]
+        else:
+            range_option = self.product.product_range.options[key]
+            range_option.selected = True
+            option = range_option
+        value_id = CCAPI.get_option_value_id(option.id, value, create=True)
+        CCAPI.set_product_option_value([self.product.id], option.id, value_id)
+        self._options = None
+
+    def __repr__(self):
+        return self.names.__repr__()
+
+    def product_has_option(self, key):
+        return key in self.names
+
+    @property
+    def options(self):
+        if self._options is None:
+            options = CCAPI.get_options_for_product(self.product.id)
+            self._options = [VariationOption(o) for o in options]
+        return self._options
 
     @property
     def names(self):
-        return list(self.options.option_names.keys())
+        return {o.name: o for o in self.options}
 
 
-class RangeOptions(ProductOptions):
+class VariationOption:
+
+    def __init__(self, option):
+        self.id = option.id
+        self.name = option.option_name
+        if option.value is None:
+            self.value = None
+        else:
+            self.value = option.value.value
+
+    def __repr__(self):
+        return '{}: {}'.format(self.name, self.value)
+
+
+class RangeOptions(OptionList):
 
     def __init__(self, product_range):
         self.product_range = product_range
         option_data = CCAPI.get_product_range_options(self.product_range.id)
         options = {o.id: o for o in option_data.options}
         self.options = [
-            RangeOption(self, o, options.get(o.id)) for o in
+            RangeOption(self.product_range, o, options.get(o.id)) for o in
             option_data.shop_options]
 
     def __getitem__(self, key):
-        return self.options[key]
+        return self.names[key]
+
+    def __repr__(self):
+        return self.selected_options.__repr__()
 
     @property
     def variation_options(self):
@@ -64,6 +100,14 @@ class RangeOptions(ProductOptions):
     @property
     def ids(self):
         return {o.id: o for o in self.options}
+
+    @property
+    def selected_options(self):
+        return [o for o in self.options if o.selected]
+
+    @property
+    def variable_options(self):
+        return [o for o in self.options if o.variable]
 
 
 class RangeOption:
@@ -79,89 +123,32 @@ class RangeOption:
             self._selected = False
             self._variable = False
 
+    def __repr__(self):
+        return self.name
+
     @property
     def selected(self):
         return self._selected
 
+    @selected.setter
+    def selected(self, selected):
+        value = bool(selected)
+        if value:
+            CCAPI.add_option_to_product(self.product_range.id, self.id)
+        else:
+            CCAPI.remove_option_from_product(self.product_range.id, self.id)
+        for product in self.product_range:
+            product._options = None
+        self._selected = value
 
-class Option:
+    @property
+    def variable(self):
+        return self._variable
 
-    def __init__(self, option_name):
-        self.option_name = option_name
-
-    def __get__(self, instance, owner):
-        return self.to_python(instance, owner)
-
-    def __set__(self, instance, value):
-        instance.options[self.option_name] = self.clean(value)
-
-    def __delete__(self, instance):
-        self.__set__(instance, '')
-
-    def to_python(self, instance, owner):
-        if self.option_name not in instance.options:
-            return None
-        value = instance.options[self.option_name]
-        if value.value is not None:
-            return value.value
-        return None
-
-    def clean(self, value):
-        return str(value)
-
-
-class DateOption(Option):
-
-    def to_python(self, *args, **kwargs):
-        value = super().to_python(*args, **kwargs)
-        if value is None:
-            return None
-        year, month, day = value.split('-')
-        return datetime.date(
-            year=int(year), month=int(month), day=int(day))
-
-    def clean(self, value):
-        return super().clean('-'.join(
-            [str(value.year), str(value.month), str(value.day)]))
-
-
-class FloatOption(Option):
-
-    def to_python(self, *args, **kwargs):
-        value = super().to_python(*args, **kwargs)
-        return float(value)
-
-
-class BoolOption(Option):
-
-    def __init__(self, option_name, true=None, false=None):
-        self.true = true
-        self.false = false
-        super().__init__(option_name)
-
-    def to_python(self, *args, **kwargs):
-        value = super().to_python(*args, **kwargs)
-        if value is None or value == self.false:
-            return False
-        if value == self.true:
-            return True
-        raise exceptions.OptionValueNotRecognised(value)
-
-    def clean(self, value):
-        if value is True:
-            return self.true
-        return super().clean(self.false)
-
-
-class ListOption(Option):
-
-    def __init__(self, option_name, delimiter='|'):
-        self.delimiter = delimiter
-        super().__init__(option_name)
-
-    def to_python(self, *args, **kwargs):
-        value = super().to_python(*args, **kwargs)
-        return value.split(self.delimiter)
-
-    def clean(self, value):
-        return super().clean(self.delimiter.join([str(v) for v in value]))
+    @variable.setter
+    def variable(self, value):
+        value = bool(value)
+        if value == self._variable:
+            return
+        CCAPI.set_range_option_drop_down(self.product_range.id, self.id, value)
+        self._variable = value

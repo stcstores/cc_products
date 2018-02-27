@@ -1,48 +1,74 @@
-from ccapi import CCAPI
+from ccapi import CCAPI, VatRates
 from ccapi.inventoryitems import Factory
 
-from . import exceptions, productoptions
+from . import exceptions, optiondescriptors, productoptions
 from .baseproduct import BaseProduct
+
+
+class VAT:
+
+    def __get__(self, instance, owner):
+        return VatRates.get_vat_rate_by_id(instance._vat_rate_id)
+
+    def __set__(self, instance, value):
+        vat_rate_id = VatRates.get_vat_rate_id_by_rate(value)
+        CCAPI.set_product_vat_rate([instance.id], vat_rate_id)
+        instance._vat_rate_id = value
 
 
 class Variation(BaseProduct):
 
-    department = productoptions.Option('Department')
-    purchase_price = productoptions.FloatOption('Purchase Price')
-    supplier_sku = productoptions.Option('Supplier SKU')
-    brand = productoptions.Option('Brand')
-    manufacturer = productoptions.Option('Manufacturer')
-    package_type = productoptions.Option('Package Type')
-    international_shipping = productoptions.Option('International_Shipping')
-    date_created = productoptions.DateOption('Date Created')
-    design = productoptions.Option('Design')
-    colour = productoptions.Option('Colour')
-    size = productoptions.Option('Size')
-    linn_sku = productoptions.Option('Linn SKU')
-    linn_title = productoptions.Option('Linn Title')
-    discontinued = productoptions.BoolOption(
+    department = optiondescriptors.OptionDescriptor('Department')
+    purchase_price = optiondescriptors.FloatOption('Purchase Price')
+    supplier_sku = optiondescriptors.OptionDescriptor('Supplier SKU')
+    brand = optiondescriptors.OptionDescriptor('Brand')
+    manufacturer = optiondescriptors.OptionDescriptor('Manufacturer')
+    package_type = optiondescriptors.OptionDescriptor('Package Type')
+    international_shipping = optiondescriptors.OptionDescriptor(
+        'International_Shipping')
+    date_created = optiondescriptors.DateOption('Date Created')
+    design = optiondescriptors.OptionDescriptor('Design')
+    colour = optiondescriptors.OptionDescriptor('Colour')
+    size = optiondescriptors.OptionDescriptor('Size')
+    linn_sku = optiondescriptors.OptionDescriptor('Linn SKU')
+    linn_title = optiondescriptors.OptionDescriptor('Linn Title')
+    discontinued = optiondescriptors.BoolOption(
         'Discontinued', true='Discontinued', false='Not Discontinued')
-    amazon_bullets = productoptions.ListOption('Amazon Bullets')
-    amazon_search_terms = productoptions.ListOption('Amazon Search Terms')
+    amazon_bullets = optiondescriptors.ListOption('Amazon Bullets')
+    amazon_search_terms = optiondescriptors.ListOption('Amazon Search Terms')
+    vat_rate = VAT()
 
-    def __init__(self, product, product_range=None):
-        self.product = product
+    def __init__(self, data, product_range=None):
         self._product_range = product_range
-
-        self.is_checked = product.is_checked
-        self.is_listed = product.is_listed
-        self.id = product.id
-        self.sku = product.sku
-        self.vat_rate_id = product.vat_rate_id
-        self.vat_rate = product.vat_rate
-        self.end_of_line = product.end_of_line
-        self.default_image_url = product.default_image_url
-
-        self._bays = None
         self._options = None
+        self._bays = None
+        self.load_from_cc_data(data)
+        if self._product_range is not None:
+            self.range_id = self._product_range.id
+
+    def load_from_cc_data(self, data):
+        self.raw = data
+        self.id = data['ID']
+        self.full_name = data['FullName']
+        self.sku = data['ManufacturerSKU']
+        self.range_id = int(data['RangeID'])
+        self.default_image_url = data['defaultImageUrl']
+        self._name = data['Name']
+        self._description = data['Description']
+        self._base_price = data['BasePrice']
+        self._barcode = data['Barcode']
+        self._end_of_line = data['EndOfLine']
+        self._stock_level = data['StockLevel']
+        self._length = data['LengthMM']
+        self._width = data['WidthMM']
+        self._height = data['HeightMM']
+        self._large_letter_compatible = data['LargeLetterCompatible']
+        self._weight = data['WeightGM']
+        self._handling_time = data['DeliveryLeadTimeDays']
+        self._vat_rate_id = int(data['VatRateID'])
 
     def __repr__(self):
-        return self.product.__repr__()
+        return self.full_name
 
     @classmethod
     def create(cls, product_range, form_data):
@@ -58,71 +84,96 @@ class Variation(BaseProduct):
     def product_range(self):
         if self._product_range is None:
             from . functions import get_range
-            self._product_range = get_range(self.product.range_id)
+            self._product_range = get_range(self.range_id)
         return self._product_range
 
     @property
     def name(self):
-        return self.product.name
-
-    @property
-    def full_name(self):
-        return self.product.full_name
+        return self._name
 
     @property
     def stock_level(self):
-        return self.product.stock_level
+        return self._stock_level
 
     @stock_level.setter
-    def stock_level(self, stock_level):
-        self.product.set_stock_level(stock_level)
-        self.stock_level = stock_level
-        self.product.stock_level = stock_level
+    def stock_level(self, new_stock_level):
+        self.CCAPI.update_product_stock_level(
+            self.id, new_stock_level, self._stock_level)
+        self._stock_level = new_stock_level
+
+    def set_product_scope(
+            self, weight=None, height=None, length=None, width=None,
+            large_letter_compatible=None, external_id=None):
+        CCAPI.set_product_scope(
+            self.id, self.weight, self.height_mm, self.length_mm,
+            self.width_mm, self.large_letter_compatible,
+            self.external_product_id)
+        if weight is not None:
+            self._weight = weight
+        if height is not None:
+            self._height_mm = height
+        if length is not None:
+            self._length_mm = length
+        if width is not None:
+            self._width_mm = width
+        if large_letter_compatible is not None:
+            self._large_letter_compatible = large_letter_compatible
+        if external_id is not None:
+            self._external_product_id = external_id
 
     @property
     def weight(self):
-        return self.product.weight
+        return self._weight
 
     @weight.setter
     def weight(self, weight):
-        self.product.set_product_scope(weight=weight)
-        self.product.weight = weight
+        CCAPI.set_product_scope(
+            self.id, self.weight, None, None, None, None, None)
+        self._weight = weight
 
     @property
     def height(self):
-        return self.product.height_mm
+        return self._height
 
     @height.setter
     def height(self, height):
-        self.product.set_product_scope(height=height)
+        CCAPI.set_product_scope(
+            self.id, None, height, None, None, None, None)
+        self._height = height
 
     @property
     def width(self):
-        return self.product.width_mm
-
-    @width.setter
-    def width(self, width):
-        self.product.set_product_scope(width=width)
+        return self._height
 
     @property
     def length(self):
-        return self.product.length_mm
+        return self._length
 
     @length.setter
     def length(self, length):
-        self.product.set_product_scope(length=length)
+        CCAPI.set_product_scope(
+            self.id, None, None, length, None, None, None)
+        self._length = length
+
+    @width.setter
+    def width(self, width):
+        CCAPI.set_product_scope(
+            self.id, None, None, None, width, None, None)
+        self._width = width
 
     @property
     def large_letter_compatible(self):
-        return self.product.large_letter_compatible
+        return self._large_letter_compatible
 
     @large_letter_compatible.setter
     def large_letter_compatible(self, compatible):
-        self.product.set_product_scope(large_letter_compatible=compatible)
+        CCAPI.set_product_scope(
+            self.id, None, None, None, None, compatible, None)
+        self._large_letter_compatible = compatible
 
     @property
     def handling_time(self):
-        return self.product.delivery_lead_time
+        return self._handling_time
 
     @handling_time.setter
     def handling_time(self, handling_time):
@@ -130,15 +181,16 @@ class Variation(BaseProduct):
 
     @property
     def price(self):
-        return float(self.product.base_price)
+        return self._price
 
     @price.setter
     def price(self, price):
-        self.product.set_base_price(price)
+        CCAPI.set_product_base_price(self.id, price)
+        self._price = price
 
     @property
     def supplier(self):
-        factories = self.product.get_factory_links()
+        factories = self._get_factory_links()
         if len(factories) == 0:
             return None
         if len(factories) == 1:
@@ -154,28 +206,41 @@ class Variation(BaseProduct):
                 factory = factories.names[factory_name]
             else:
                 raise exceptions.FactoryDoesNotExist(factory_name)
-        self.product.update_product_factory_link(factory.id)
+        self._update_product_factory_link(factory.id)
         self.options['Supplier'] = factory.name
 
     @property
     def barcode(self):
-        return self.product.barcode
+        return self._barcode
+
+    @barcode.setter
+    def barcode(self, barcode):
+        #  TODO
+        pass
 
     @property
     def description(self):
-        return self.product.description
+        return self._description
 
     @description.setter
     def description(self, value):
         if value is None or value == '':
             value = self.name
-        self.product.set_description(value)
-        self.product.description = value
+        self.product.CCAPI.set_product_description(value, [self.id])
+        self._description = value
 
     @property
     def options(self):
         if self._options is None:
-            options = self.product.options
             self._options = productoptions.VariationOptions(
-                options, self, self.product_range)
+                self, self.product_range)
         return self._options
+
+    def _get_factory_links(self):
+        return CCAPI.get_product_factory_links(self.id)
+
+    def _update_factory_link(
+            self, factory_id, dropship=False, supplier_sku='', price=0):
+        return CCAPI.update_product_factory_link(
+            product_id=self.id, factory_id=factory_id, dropship=dropship,
+            supplier_sku=supplier_sku, price=price)
