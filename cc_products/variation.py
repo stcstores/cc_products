@@ -255,7 +255,7 @@ class Variation(BaseProduct):
     def bays(self, new_bays):
         old_bays = self.bays
         bays_to_remove = [b for b in old_bays if b not in new_bays]
-        bays_to_add = [b for b in new_bays if b not in new_bays]
+        bays_to_add = [b for b in new_bays if b not in old_bays]
         for bay in bays_to_remove:
             CCAPI.remove_warehouse_bay_from_product(self.id, bay)
         for bay in bays_to_add:
