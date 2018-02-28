@@ -46,7 +46,7 @@ class ProductRange(BaseProduct):
 
     @property
     def name(self):
-        return self.product.name
+        return self._name
 
     @property
     def end_of_line(self):
