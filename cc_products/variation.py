@@ -244,3 +244,20 @@ class Variation(BaseProduct):
         return CCAPI.update_product_factory_link(
             product_id=self.id, factory_id=factory_id, dropship=dropship,
             supplier_sku=supplier_sku, price=price)
+
+    @property
+    def bays(self):
+        if self._bays is None:
+            self._bays = [b.id for b in CCAPI.get_bays_for_product(self.id)]
+        return self._bays
+
+    @bays.setter
+    def bays(self, new_bays):
+        old_bays = self.bays
+        bays_to_remove = [b for b in old_bays if b not in new_bays]
+        bays_to_add = [b for b in new_bays if b not in new_bays]
+        for bay in bays_to_remove:
+            CCAPI.remove_warehouse_bay_from_product(self.id, bay)
+        for bay in bays_to_add:
+            CCAPI.add_warehouse_bay_to_product(self.id, bay)
+        self._bays = None
