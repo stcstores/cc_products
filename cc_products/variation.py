@@ -258,6 +258,7 @@ class Variation(BaseProduct):
 
     @bays.setter
     def bays(self, new_bays):
+        new_bays = [int(bay) for bay in new_bays]
         old_bays = self.bays
         bays_to_remove = [b for b in old_bays if b not in new_bays]
         bays_to_add = [b for b in new_bays if b not in old_bays]
