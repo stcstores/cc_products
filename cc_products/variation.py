@@ -26,7 +26,7 @@ class Variation(BaseProduct):
     supplier_sku = optiondescriptors.OptionDescriptor('Supplier SKU')
     brand = optiondescriptors.OptionDescriptor('Brand')
     manufacturer = optiondescriptors.OptionDescriptor('Manufacturer')
-    package_type = optiondescriptors.OptionDescriptor('Package Type')
+    package_type = optiondescriptors.PackageTypeOption()
     international_shipping = optiondescriptors.OptionDescriptor(
         'International_Shipping')
     date_created = optiondescriptors.DateOption('Date Created')
