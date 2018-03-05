@@ -244,8 +244,11 @@ class Variation(BaseProduct):
     def _get_factory_links(self):
         return CCAPI.get_product_factory_links(self.id)
 
-    def _update_factory_link(
+    def _update_product_factory_link(
             self, factory_id, dropship=False, supplier_sku='', price=0):
+        factory_links = self._get_factory_links()
+        for link in factory_links:
+            link.delete()
         return CCAPI.update_product_factory_link(
             product_id=self.id, factory_id=factory_id, dropship=dropship,
             supplier_sku=supplier_sku, price=price)
