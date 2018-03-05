@@ -42,6 +42,7 @@ class Variation(BaseProduct):
         self._product_range = product_range
         self._options = None
         self._bays = None
+        self._price = None
         self.load_from_cc_data(data)
         if self._product_range is not None:
             self.range_id = self._product_range.id
@@ -55,7 +56,6 @@ class Variation(BaseProduct):
         self.default_image_url = data['defaultImageUrl']
         self._name = data['Name']
         self._description = data['Description']
-        self._base_price = data['BasePrice']
         self._barcode = data['Barcode']
         self._end_of_line = data['EndOfLine']
         self._stock_level = data['StockLevel']
@@ -181,6 +181,8 @@ class Variation(BaseProduct):
 
     @property
     def price(self):
+        if self._price is None:
+            self._price = float(CCAPI.get_product(self.id).base_price)
         return self._price
 
     @price.setter
