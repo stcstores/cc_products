@@ -57,6 +57,7 @@ class Variation(BaseProduct):
         self.sku = data['ManufacturerSKU']
         self.range_id = int(data['RangeID'])
         self.default_image_url = data['defaultImageUrl']
+        self._external_product_id = data['ExternalProductId']
         self._name = data['Name']
         self._description = data['Description']
         self._barcode = data['Barcode']
@@ -104,25 +105,24 @@ class Variation(BaseProduct):
             self.id, new_stock_level, self._stock_level)
         self._stock_level = new_stock_level
 
-    def set_product_scope(
+    def _set_product_scope(
             self, weight=None, height=None, length=None, width=None,
             large_letter_compatible=None, external_id=None):
-        CCAPI.set_product_scope(
-            self.id, self.weight, self.height_mm, self.length_mm,
-            self.width_mm, self.large_letter_compatible,
-            self.external_product_id)
         if weight is not None:
             self._weight = weight
         if height is not None:
-            self._height_mm = height
+            self._height = height
         if length is not None:
-            self._length_mm = length
+            self._length = length
         if width is not None:
-            self._width_mm = width
+            self._width = width
         if large_letter_compatible is not None:
             self._large_letter_compatible = large_letter_compatible
         if external_id is not None:
             self._external_product_id = external_id
+        CCAPI.set_product_scope(
+            self.id, self._weight, self._height, self._length, self._width,
+            self._large_letter_compatible, self._external_product_id)
 
     @property
     def weight(self):
@@ -130,8 +130,7 @@ class Variation(BaseProduct):
 
     @weight.setter
     def weight(self, weight):
-        CCAPI.set_product_scope(
-            self.id, self.weight, None, None, None, None, None)
+        self._set_product_scope(weight=weight)
         self._weight = weight
 
     @property
@@ -140,13 +139,17 @@ class Variation(BaseProduct):
 
     @height.setter
     def height(self, height):
-        CCAPI.set_product_scope(
-            self.id, None, height, None, None, None, None)
+        self._set_product_scope(height=height)
         self._height = height
 
     @property
     def width(self):
-        return self._height
+        return self._width
+
+    @width.setter
+    def width(self, width):
+        self._set_product_scope(width=width)
+        self._width = width
 
     @property
     def length(self):
@@ -154,24 +157,16 @@ class Variation(BaseProduct):
 
     @length.setter
     def length(self, length):
-        CCAPI.set_product_scope(
-            self.id, None, None, length, None, None, None)
+        self._set_product_scope(length=length)
         self._length = length
-
-    @width.setter
-    def width(self, width):
-        CCAPI.set_product_scope(
-            self.id, None, None, None, width, None, None)
-        self._width = width
 
     @property
     def large_letter_compatible(self):
-        return self._large_letter_compatible
+        return bool(self._large_letter_compatible)
 
     @large_letter_compatible.setter
     def large_letter_compatible(self, compatible):
-        CCAPI.set_product_scope(
-            self.id, None, None, None, None, compatible, None)
+        self._set_product_scope(large_letter_compatible=compatible)
         self._large_letter_compatible = compatible
 
     @property
