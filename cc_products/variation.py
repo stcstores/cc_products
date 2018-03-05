@@ -21,6 +21,11 @@ class VAT:
 
 class Variation(BaseProduct):
 
+    LARGE_LETTER = 'Large Letter'
+    PACKET = 'Packet'
+    HEAVY_AND_LARGE = 'Heavy and Large'
+    COURIER = 'Courier'
+
     department = optiondescriptors.OptionDescriptor('Department')
     purchase_price = optiondescriptors.FloatOption('Purchase Price')
     supplier_sku = optiondescriptors.OptionDescriptor('Supplier SKU')

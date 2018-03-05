@@ -29,24 +29,21 @@ class OptionDescriptor:
 
 class PackageTypeOption(OptionDescriptor):
 
-    LARGE_LETTER = 'Large Letter'
-    PACKET = 'Packet'
-    HEAVY_AND_LARGE = 'Heavy and Large'
-    COURIER = 'Courier'
-
     def __init__(self):
         super().__init__('Package Type')
 
     def __set__(self, instance, value):
         value = value.strip()
-        if value == self.LARGE_LETTER:
-            super().__set__(instance, self.LARGE_LETTER)
+        non_large_letter_values = (
+            instance.PACKET, instance.HEAVY_AND_LARGE, instance.COURIER)
+        if value == instance.LARGE_LETTER:
+            super().__set__(instance, instance.LARGE_LETTER)
             instance.large_letter_compatible = True
-        elif value in (self.PACKET, self.HEAVY_AND_LARGE, self.COURIER):
+        elif value in non_large_letter_values:
             super().__set__(instance, value)
             instance.large_letter_compatible = False
         else:
-            raise ValueError('{} is not a valid package type'.format(value))
+            raise ValueError('"{}" is not a valid package type'.format(value))
 
 
 class DateOption(OptionDescriptor):
