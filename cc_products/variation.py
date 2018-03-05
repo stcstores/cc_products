@@ -11,9 +11,12 @@ class VAT:
         return VatRates.get_vat_rate_by_id(instance._vat_rate_id)
 
     def __set__(self, instance, value):
-        vat_rate_id = VatRates.get_vat_rate_id_by_rate(value)
-        CCAPI.set_product_vat_rate([instance.id], vat_rate_id)
-        instance._vat_rate_id = value
+        try:
+            vat_rate_id = VatRates.get_vat_rate_id_by_rate(value)
+        except KeyError:
+            raise Exception('{}% is not a valid VAT rate.'.format(value))
+        CCAPI.set_product_vat_rate([instance.id], value)
+        instance._vat_rate_id = vat_rate_id
 
 
 class Variation(BaseProduct):
