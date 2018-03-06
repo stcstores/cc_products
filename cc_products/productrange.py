@@ -23,7 +23,7 @@ class ProductRange(BaseProduct):
         self.pre_order = bool(data['PreOrder'])
         self.grouped = bool(data['Grouped'])
         self.products = [
-            Variation(product_data, product_range=self)
+            Variation.create_from_range(product_data, product_range=self)
             for product_data in data['Products']]
 
     def __iter__(self):

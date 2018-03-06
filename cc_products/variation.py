@@ -9,8 +9,8 @@ class VAT:
 
     def __get__(self, instance, owner):
         if instance._vat_rate_id is None:
-            instance._vat_rate_id = CCAPI.get_product(instance.id).vat_rate_id
-        return VatRates.get_vat_rate_by_id(instance._vat_rate_id)
+            instance._reload()
+        return VatRates.get_vat_rate_by_id(int(instance._vat_rate_id))
 
     def __set__(self, instance, value):
         try:
@@ -19,6 +19,46 @@ class VAT:
             raise Exception('{}% is not a valid VAT rate.'.format(value))
         CCAPI.set_product_vat_rate([instance.id], value)
         instance._vat_rate_id = vat_rate_id
+
+
+class ProductScopeDescriptor:
+
+    def __get__(self, instance, owner):
+        value = getattr(instance, self.instance_attr)
+        if value is None:
+            instance._reload()
+        return getattr(instance, self.instance_attr)
+
+    def __set__(self, instance, value):
+        CCAPI.set_product_scope(
+            instance.id, instance.weight, instance.height, instance.length,
+            instance.width, instance.large_letter_compatible,
+            instance.external_product_id)
+        setattr(instance, self.instance_attr, value)
+
+
+class WeightDescriptor(ProductScopeDescriptor):
+    instance_attr = '_weight'
+
+
+class LengthDescriptor(ProductScopeDescriptor):
+    instance_attr = '_length'
+
+
+class WidthDescriptor(ProductScopeDescriptor):
+    instance_attr = '_width'
+
+
+class HeightDescriptor(ProductScopeDescriptor):
+    instance_attr = '_height'
+
+
+class LargeLetterCompatibleDescriptor(ProductScopeDescriptor):
+    instance_attr = '_large_letter_compatible'
+
+
+class ExternalProductIDDescriptor(ProductScopeDescriptor):
+    instance_attr = '_external_product_id'
 
 
 class Variation(BaseProduct):
@@ -47,6 +87,12 @@ class Variation(BaseProduct):
     amazon_bullets = optiondescriptors.ListOption('Amazon Bullets')
     amazon_search_terms = optiondescriptors.ListOption('Amazon Search Terms')
     vat_rate = VAT()
+    weight = WeightDescriptor()
+    length = LengthDescriptor()
+    width = WidthDescriptor()
+    height = HeightDescriptor()
+    large_letter_compatible = LargeLetterCompatibleDescriptor()
+    external_product_id = ExternalProductIDDescriptor()
 
     def __init__(self, data, product_range=None):
         self._product_range = product_range
@@ -64,7 +110,7 @@ class Variation(BaseProduct):
         self.id = data['ID']
         self.full_name = data['FullName']
         self.sku = data['ManufacturerSKU']
-        self.range_id = int(data['RangeID'])
+        self.range_id = data['RangeID']
         self.default_image_url = data['defaultImageUrl']
         self._external_product_id = data['ExternalProductId']
         self._name = data['Name']
@@ -78,10 +124,20 @@ class Variation(BaseProduct):
         self._large_letter_compatible = data['LargeLetterCompatible']
         self._weight = data['WeightGM']
         self._handling_time = data['DeliveryLeadTimeDays']
-        if data['BasePrice'] is not None:
-            self._base_price = float(data['BasePrice'])
-        if int(data['VatRateID']) != 0:
-            self._vat_rate_id = int(data['VatRateID'])
+        self._price = data['BasePrice']
+        self._vat_rate_id = data['VatRateID']
+
+    @classmethod
+    def create_from_range(cls, data, product_range):
+        data['BasePrice'] = None
+        data['VatRateID'] = None
+        data['WeightGM'] = None
+        data['LengthMM'] = None
+        data['WidthMM'] = None
+        data['HeightMM'] = None
+        data['LargeLetterCompatible'] = None
+        data['ExternalProductId'] = None
+        return cls(data, product_range=product_range)
 
     def __repr__(self):
         return self.full_name
@@ -117,70 +173,6 @@ class Variation(BaseProduct):
             self.id, new_stock_level, self._stock_level)
         self._stock_level = new_stock_level
 
-    def _set_product_scope(
-            self, weight=None, height=None, length=None, width=None,
-            large_letter_compatible=None, external_id=None):
-        if weight is not None:
-            self._weight = weight
-        if height is not None:
-            self._height = height
-        if length is not None:
-            self._length = length
-        if width is not None:
-            self._width = width
-        if large_letter_compatible is not None:
-            self._large_letter_compatible = large_letter_compatible
-        if external_id is not None:
-            self._external_product_id = external_id
-        CCAPI.set_product_scope(
-            self.id, self._weight, self._height, self._length, self._width,
-            self._large_letter_compatible, self._external_product_id)
-
-    @property
-    def weight(self):
-        return self._weight
-
-    @weight.setter
-    def weight(self, weight):
-        self._set_product_scope(weight=weight)
-        self._weight = weight
-
-    @property
-    def height(self):
-        return self._height
-
-    @height.setter
-    def height(self, height):
-        self._set_product_scope(height=height)
-        self._height = height
-
-    @property
-    def width(self):
-        return self._width
-
-    @width.setter
-    def width(self, width):
-        self._set_product_scope(width=width)
-        self._width = width
-
-    @property
-    def length(self):
-        return self._length
-
-    @length.setter
-    def length(self, length):
-        self._set_product_scope(length=length)
-        self._length = length
-
-    @property
-    def large_letter_compatible(self):
-        return bool(self._large_letter_compatible)
-
-    @large_letter_compatible.setter
-    def large_letter_compatible(self, compatible):
-        self._set_product_scope(large_letter_compatible=compatible)
-        self._large_letter_compatible = compatible
-
     @property
     def handling_time(self):
         return self._handling_time
@@ -192,8 +184,8 @@ class Variation(BaseProduct):
     @property
     def price(self):
         if self._price is None:
-            self._price = float(CCAPI.get_product(self.id).base_price)
-        return self._price
+            self._reload()
+        return float(self._price)
 
     @price.setter
     def price(self, price):
@@ -277,3 +269,6 @@ class Variation(BaseProduct):
         for bay in bays_to_add:
             CCAPI.add_warehouse_bay_to_product(self.id, bay)
         self._bays = None
+
+    def _reload(self):
+        self.load_from_cc_data(CCAPI.get_product(self.id).json)
