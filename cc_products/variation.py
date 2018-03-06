@@ -30,11 +30,11 @@ class ProductScopeDescriptor:
         return getattr(instance, self.instance_attr)
 
     def __set__(self, instance, value):
+        setattr(instance, self.instance_attr, value)
         CCAPI.set_product_scope(
             instance.id, instance.weight, instance.height, instance.length,
             instance.width, instance.large_letter_compatible,
             instance.external_product_id)
-        setattr(instance, self.instance_attr, value)
 
 
 class WeightDescriptor(ProductScopeDescriptor):
