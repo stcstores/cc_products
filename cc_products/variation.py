@@ -8,6 +8,8 @@ from .baseproduct import BaseProduct
 class VAT:
 
     def __get__(self, instance, owner):
+        if instance._vat_rate_id is None:
+            instance._vat_rate_id = CCAPI.get_product(instance.id).vat_rate_id
         return VatRates.get_vat_rate_by_id(instance._vat_rate_id)
 
     def __set__(self, instance, value):
@@ -51,6 +53,8 @@ class Variation(BaseProduct):
         self._options = None
         self._bays = None
         self._price = None
+        self._vat_rate = None
+        self._vat_rate_id = None
         self.load_from_cc_data(data)
         if self._product_range is not None:
             self.range_id = self._product_range.id
@@ -74,7 +78,10 @@ class Variation(BaseProduct):
         self._large_letter_compatible = data['LargeLetterCompatible']
         self._weight = data['WeightGM']
         self._handling_time = data['DeliveryLeadTimeDays']
-        self._vat_rate_id = int(data['VatRateID'])
+        if data['BasePrice'] is not None:
+            self._base_price = float(data['BasePrice'])
+        if int(data['VatRateID']) != 0:
+            self._vat_rate_id = int(data['VatRateID'])
 
     def __repr__(self):
         return self.full_name
