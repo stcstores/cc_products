@@ -1,6 +1,6 @@
 from ccapi import CCAPI
 
-from . import productoptions
+from . import exceptions, productoptions
 from .baseproduct import BaseProduct
 from .variation import Variation
 
@@ -70,3 +70,18 @@ class ProductRange(BaseProduct):
         self._end_of_line = bool(value)
         for product in self.products:
             product.discontinued = True
+
+    @property
+    def department(self):
+        departments = [p.department for p in self.products if p.department]
+        if len(departments) == 0:
+            raise exceptions.NoDepartmentError(self)
+        if len(departments) == len(self.products):
+            if all([d == departments[0] for d in departments]):
+                return departments[0]
+        raise exceptions.MixedDepartmentsError(self)
+
+    @department.setter
+    def department(self, department):
+        for product in self.products:
+            product.department = department
