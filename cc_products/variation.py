@@ -267,7 +267,7 @@ class Variation(BaseProduct):
     @stock_level.setter
     def stock_level(self, new_stock_level):
         """Update the stock level of the product."""
-        self.CCAPI.update_product_stock_level(
+        CCAPI.update_product_stock_level(
             self.id, new_stock_level, self._stock_level)
         self._stock_level = new_stock_level
 
