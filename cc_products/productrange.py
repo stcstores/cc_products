@@ -110,3 +110,11 @@ class ProductRange(BaseProduct):
     def variable_options(self):
         """Return list of Product Options which are variable for the range."""
         return self.options.variable_options
+
+    def add_product(self, barcode, description, vat_rate):
+        """Create a new product belonging to this range."""
+        from . functions import get_product
+        product_id = CCAPI.create_product(
+            self.id, self.name, barcode, description=description,
+            vat_rate=vat_rate)
+        return get_product(product_id)
