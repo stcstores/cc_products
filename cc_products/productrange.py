@@ -1,3 +1,9 @@
+"""
+Provides the ProductRange class.
+
+A wrapper for Cloud Commerce Product Ranges.
+"""
+
 from ccapi import CCAPI
 
 from . import exceptions, productoptions
@@ -6,14 +12,23 @@ from .variation import Variation
 
 
 class ProductRange(BaseProduct):
+    """Wrapper for Cloud Commerce Product Ranges."""
 
     def __init__(self, data):
+        """Initialise attributes."""
         self.load_from_cc_data(data)
-
         self._options = None
         self._products = None
 
+    def __repr__(self):
+        return self.name
+
+    def __iter__(self):
+        for product in self.products:
+            yield product
+
     def load_from_cc_data(self, data):
+        """Set attributes from Cloud Commerce API data."""
         self.raw = data
         self.id = data['ID']
         self._name = data['Name']
@@ -26,34 +41,37 @@ class ProductRange(BaseProduct):
             Variation.create_from_range(product_data, product_range=self)
             for product_data in data['Products']]
 
-    def __iter__(self):
+    @property
+    def department(self):
+        """Return the name of the Department to which the range belongs."""
+        departments = [p.department for p in self.products if p.department]
+        if len(departments) == 0:
+            raise exceptions.NoDepartmentError(self)
+        if len(departments) == len(self.products):
+            if all([d == departments[0] for d in departments]):
+                return departments[0]
+        raise exceptions.MixedDepartmentsError(self)
+
+    @department.setter
+    def department(self, department):
+        """Set the Department to which the range belongs."""
         for product in self.products:
-            yield product
-
-    @property
-    def options(self):
-        if self._options is None:
-            self._options = productoptions.RangeOptions(self)
-        return self._options
-
-    @property
-    def selected_options(self):
-        return self.options.selected_options
-
-    @property
-    def variable_options(self):
-        return self.options.variable_options
-
-    @property
-    def name(self):
-        return self._name
+            product.department = department
 
     @property
     def end_of_line(self):
+        """Return the end of line status of the range."""
         return self._end_of_line
 
     @end_of_line.setter
     def end_of_line(self, value):
+        """
+        Set the end of line status of the range.
+
+        Args:
+            value <bool>: True if product is End of Line, else False.
+
+        """
         CCAPI.update_range_settings(
             self.id,
             current_name=self.name,
@@ -72,16 +90,23 @@ class ProductRange(BaseProduct):
             product.discontinued = True
 
     @property
-    def department(self):
-        departments = [p.department for p in self.products if p.department]
-        if len(departments) == 0:
-            raise exceptions.NoDepartmentError(self)
-        if len(departments) == len(self.products):
-            if all([d == departments[0] for d in departments]):
-                return departments[0]
-        raise exceptions.MixedDepartmentsError(self)
+    def name(self):
+        """Return the name of the range."""
+        return self._name
 
-    @department.setter
-    def department(self, department):
-        for product in self.products:
-            product.department = department
+    @property
+    def options(self):
+        """Return Product Options for the range."""
+        if self._options is None:
+            self._options = productoptions.RangeOptions(self)
+        return self._options
+
+    @property
+    def selected_options(self):
+        """Return list of Product Options which are set for the range."""
+        return self.options.selected_options
+
+    @property
+    def variable_options(self):
+        """Return list of Product Options which are variable for the range."""
+        return self.options.variable_options

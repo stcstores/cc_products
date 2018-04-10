@@ -1,3 +1,6 @@
+"""Descriptors for Product Options."""
+
+
 import datetime
 
 from . import exceptions

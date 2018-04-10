@@ -1,3 +1,9 @@
+"""
+Variation class.
+
+Wrapper for Cloud Commerce Products.
+"""
+
 from ccapi import CCAPI, VatRates
 from ccapi.inventoryitems import Factory
 
@@ -6,6 +12,7 @@ from .baseproduct import BaseProduct
 
 
 class VAT:
+    """Descriptor for handeling product VAT rate."""
 
     def __get__(self, instance, owner):
         if instance._vat_rate_id is None:
@@ -22,6 +29,7 @@ class VAT:
 
 
 class ProductScopeDescriptor:
+    """Base class for descriptors handeling product scope attributes."""
 
     def __get__(self, instance, owner):
         value = getattr(instance, self.instance_attr)
@@ -38,30 +46,43 @@ class ProductScopeDescriptor:
 
 
 class WeightDescriptor(ProductScopeDescriptor):
+    """Descriptor for product wieght."""
+
     instance_attr = '_weight'
 
 
 class LengthDescriptor(ProductScopeDescriptor):
+    """Descriptor for product length."""
+
     instance_attr = '_length'
 
 
 class WidthDescriptor(ProductScopeDescriptor):
+    """Descriptor for product width."""
+
     instance_attr = '_width'
 
 
 class HeightDescriptor(ProductScopeDescriptor):
+    """Descriptor for product height."""
+
     instance_attr = '_height'
 
 
 class LargeLetterCompatibleDescriptor(ProductScopeDescriptor):
+    """Descriptor for product large letter compatibility."""
+
     instance_attr = '_large_letter_compatible'
 
 
 class ExternalProductIDDescriptor(ProductScopeDescriptor):
+    """Descriptor for product external ID."""
+
     instance_attr = '_external_product_id'
 
 
 class Variation(BaseProduct):
+    """Wrapper for Cloud Commerce Products."""
 
     LARGE_LETTER = 'Large Letter'
     PACKET = 'Packet'
@@ -95,6 +116,7 @@ class Variation(BaseProduct):
     external_product_id = ExternalProductIDDescriptor()
 
     def __init__(self, data, product_range=None):
+        """Initialise hidden attributeds."""
         self._product_range = product_range
         self._options = None
         self._bays = None
@@ -105,7 +127,11 @@ class Variation(BaseProduct):
         if self._product_range is not None:
             self.range_id = self._product_range.id
 
+    def __repr__(self):
+        return self.full_name
+
     def load_from_cc_data(self, data):
+        """Load initial data from Cloud Commerce Product data."""
         self.raw = data
         self.id = data['ID']
         self.full_name = data['FullName']
@@ -129,6 +155,7 @@ class Variation(BaseProduct):
 
     @classmethod
     def create_from_range(cls, data, product_range):
+        """Load initial data from Cloud Commerce Product Range data."""
         data['BasePrice'] = None
         data['VatRateID'] = None
         data['WeightGM'] = None
@@ -139,61 +166,124 @@ class Variation(BaseProduct):
         data['ExternalProductId'] = None
         return cls(data, product_range=product_range)
 
-    def __repr__(self):
-        return self.full_name
+    @property
+    def bays(self):
+        """Return a list of IDs for Bays in which this product is located."""
+        if self._bays is None:
+            self._bays = [b.id for b in CCAPI.get_bays_for_product(self.id)]
+        return self._bays
 
-    @classmethod
-    def create(cls, product_range, form_data):
+    @bays.setter
+    def bays(self, new_bays):
         """
-        data, options = form_data
-        new_product = product_range.add_product(name, barcode)
-        product = cls(new_product, product_range)
-        return product
+        Update Warehouse Bays for product.
+
+        Args:
+            new_bays: list<int> of Warehouse Bay IDs.
         """
+        new_bays = [int(bay) for bay in new_bays]
+        old_bays = self.bays
+        bays_to_remove = [b for b in old_bays if b not in new_bays]
+        bays_to_add = [b for b in new_bays if b not in old_bays]
+        for bay in bays_to_remove:
+            CCAPI.remove_warehouse_bay_from_product(self.id, bay)
+        for bay in bays_to_add:
+            CCAPI.add_warehouse_bay_to_product(self.id, bay)
+        self._bays = None
+
+    @property
+    def barcode(self):
+        """Return the barcode of the product."""
+        return self._barcode
+
+    @barcode.setter
+    def barcode(self, barcode):
+        """Set the barcode for the product."""
+        #  TODO
         pass
 
     @property
-    def product_range(self):
-        if self._product_range is None:
-            from . functions import get_range
-            self._product_range = get_range(self.range_id)
-        return self._product_range
+    def description(self):
+        """Return the description of the product."""
+        return self._description
 
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def stock_level(self):
-        return self._stock_level
-
-    @stock_level.setter
-    def stock_level(self, new_stock_level):
-        self.CCAPI.update_product_stock_level(
-            self.id, new_stock_level, self._stock_level)
-        self._stock_level = new_stock_level
+    @description.setter
+    def description(self, value):
+        """Set the description of the product."""
+        if value is None or value == '':
+            value = self.name
+        self.product.CCAPI.set_product_description(value, [self.id])
+        self._description = value
 
     @property
     def handling_time(self):
+        """Return the handling time for the product."""
         return self._handling_time
 
     @handling_time.setter
     def handling_time(self, handling_time):
+        """Set the handling time for the product."""
         self.product.set_handling_time(handling_time)
 
     @property
+    def name(self):
+        """Return the name of the product."""
+        return self._name
+
+    @property
+    def options(self):
+        """Return the Product Options of the product."""
+        if self._options is None:
+            self._options = productoptions.VariationOptions(
+                self, self.product_range)
+        return self._options
+
+    @property
     def price(self):
+        """Return the base price for the product."""
         if self._price is None:
             self._reload()
         return float(self._price)
 
     @price.setter
     def price(self, price):
+        """Set the base price for the product."""
         CCAPI.set_product_base_price(self.id, price)
         self._price = price
 
     @property
+    def product_range(self):
+        """Return the Product Range to whicth this product belongs."""
+        if self._product_range is None:
+            from . functions import get_range
+            self._product_range = get_range(self.range_id)
+        return self._product_range
+
+    @property
+    def stock_level(self):
+        """Return the current stock level for the product."""
+        return self._stock_level
+
+    @stock_level.setter
+    def stock_level(self, new_stock_level):
+        """Update the stock level of the product."""
+        self.CCAPI.update_product_stock_level(
+            self.id, new_stock_level, self._stock_level)
+        self._stock_level = new_stock_level
+
+    @property
     def supplier(self):
+        """
+        Return the Factory Link associated with the product.
+
+        Returns:
+            CCAPI.FactoryLink if exactly one exists.
+            None if no factory link exists.
+
+        Raises:
+            Exception if more than one Factory Link exists for the product.
+
+        """
         factories = self._get_factory_links()
         if len(factories) == 0:
             return None
@@ -204,6 +294,14 @@ class Variation(BaseProduct):
 
     @supplier.setter
     def supplier(self, factory_name):
+        """
+        Set the supplier of the product.
+
+        Remove all Factory Links and create a new Factory Link to the Factory
+        named factory_name.
+
+        Set Product Option Supplier to factory name.
+        """
         if not isinstance(factory_name, Factory):
             factories = CCAPI.get_factories()
             if factory_name in factories.names:
@@ -213,32 +311,8 @@ class Variation(BaseProduct):
         self._update_product_factory_link(factory.id)
         self.options['Supplier'] = factory.name
 
-    @property
-    def barcode(self):
-        return self._barcode
-
-    @barcode.setter
-    def barcode(self, barcode):
-        #  TODO
-        pass
-
-    @property
-    def description(self):
-        return self._description
-
-    @description.setter
-    def description(self, value):
-        if value is None or value == '':
-            value = self.name
-        self.product.CCAPI.set_product_description(value, [self.id])
-        self._description = value
-
-    @property
-    def options(self):
-        if self._options is None:
-            self._options = productoptions.VariationOptions(
-                self, self.product_range)
-        return self._options
+    def _reload(self):
+        self.load_from_cc_data(CCAPI.get_product(self.id).json)
 
     def _get_factory_links(self):
         return CCAPI.get_product_factory_links(self.id)
@@ -251,24 +325,3 @@ class Variation(BaseProduct):
         return CCAPI.update_product_factory_link(
             product_id=self.id, factory_id=factory_id, dropship=dropship,
             supplier_sku=supplier_sku, price=price)
-
-    @property
-    def bays(self):
-        if self._bays is None:
-            self._bays = [b.id for b in CCAPI.get_bays_for_product(self.id)]
-        return self._bays
-
-    @bays.setter
-    def bays(self, new_bays):
-        new_bays = [int(bay) for bay in new_bays]
-        old_bays = self.bays
-        bays_to_remove = [b for b in old_bays if b not in new_bays]
-        bays_to_add = [b for b in new_bays if b not in old_bays]
-        for bay in bays_to_remove:
-            CCAPI.remove_warehouse_bay_from_product(self.id, bay)
-        for bay in bays_to_add:
-            CCAPI.add_warehouse_bay_to_product(self.id, bay)
-        self._bays = None
-
-    def _reload(self):
-        self.load_from_cc_data(CCAPI.get_product(self.id).json)
