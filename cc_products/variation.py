@@ -212,7 +212,7 @@ class Variation(BaseProduct):
         """Set the description of the product."""
         if value is None or value == '':
             value = self.name
-        self.product.CCAPI.set_product_description(value, [self.id])
+        CCAPI.set_product_description(value, [self.id])
         self._description = value
 
     @property
@@ -223,7 +223,8 @@ class Variation(BaseProduct):
     @handling_time.setter
     def handling_time(self, handling_time):
         """Set the handling time for the product."""
-        self.product.set_handling_time(handling_time)
+        CCAPI.set_product_handling_time(self.id, handling_time)
+        self._handling_time = handling_time
 
     @property
     def name(self):
