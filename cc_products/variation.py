@@ -205,6 +205,8 @@ class Variation(BaseProduct):
     @property
     def description(self):
         """Return the description of the product."""
+        if self._description is None:
+            self._description = CCAPI.get_product(self.id).description
         return self._description
 
     @description.setter
