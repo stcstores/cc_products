@@ -34,6 +34,7 @@ class ProductRange(BaseProduct):
         self._name = data['Name']
         self.sku = data['ManufacturerSKU']
         self._end_of_line = data['EndOfLine']
+        self._description = None
         self.thumbnail = data['ThumbNail']
         self.pre_order = bool(data['PreOrder'])
         self.grouped = bool(data['Grouped'])
@@ -57,6 +58,20 @@ class ProductRange(BaseProduct):
         """Set the Department to which the range belongs."""
         for product in self.products:
             product.department = department
+
+    @property
+    def description(self):
+        """Return the description of the Range."""
+        if self._description is None:
+            self._description = self.products[0].description
+        return self._description
+
+    @description.setter
+    def description(self, description):
+        """Set the description for the Range."""
+        CCAPI.set_product_description(
+            description, [p.id for p in self.products])
+        self._description = description
 
     @property
     def end_of_line(self):
