@@ -100,6 +100,8 @@ class ListOption(OptionDescriptor):
 
     def to_python(self, *args, **kwargs):
         value = super().to_python(*args, **kwargs)
+        if value is None:
+            return []
         return value.split(self.delimiter)
 
     def clean(self, value):
