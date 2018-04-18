@@ -94,6 +94,23 @@ class ProductRange(BaseProduct):
         """Return the name of the range."""
         return self._name
 
+    @name.setter
+    def name(self, name):
+        CCAPI.set_product_name(name, [p.id for p in self.products])
+        CCAPI.update_range_settings(
+            self.id,
+            current_name=self.name,
+            current_sku=self.sku,
+            current_end_of_line=self.end_of_line,
+            current_pre_order=self.pre_order,
+            current_group_items=self.grouped,
+            new_name=name,
+            new_sku=self.sku,
+            new_end_of_line=self.end_of_line,
+            new_pre_order=self.pre_order,
+            new_group_items=self.grouped,
+            channels=self._get_sales_channel_ids())
+
     @property
     def options(self):
         """Return Product Options for the range."""
@@ -118,3 +135,11 @@ class ProductRange(BaseProduct):
             self.id, self.name, barcode, description=description,
             vat_rate=vat_rate)
         return get_product(product_id)
+
+    def _get_sales_channels(self):
+        """Get Sales Channels for this Product Range."""
+        return CCAPI.get_sales_channels_for_range(self.id)
+
+    def _get_sales_channel_ids(self):
+        """Get IDs of Sales Channels on which this Product Range is listed."""
+        return [channel.id for channel in self._get_sales_channels()]
