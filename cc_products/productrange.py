@@ -151,6 +151,10 @@ class ProductRange(BaseProduct):
             vat_rate=vat_rate)
         return get_product(product_id)
 
+    def delete(self):
+        """Delete this Product Range."""
+        CCAPI.delete_range(self.id)
+
     def _get_sales_channels(self):
         """Get Sales Channels for this Product Range."""
         return CCAPI.get_sales_channels_for_range(self.id)
