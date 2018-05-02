@@ -96,7 +96,7 @@ class Variation(BaseProduct):
     manufacturer = optiondescriptors.OptionDescriptor('Manufacturer')
     package_type = optiondescriptors.PackageTypeOption()
     international_shipping = optiondescriptors.OptionDescriptor(
-        'International_Shipping')
+        'International Shipping')
     date_created = optiondescriptors.DateOption('Date Created')
     design = optiondescriptors.OptionDescriptor('Design')
     colour = optiondescriptors.OptionDescriptor('Colour')
