@@ -60,8 +60,7 @@ class DateOption(OptionDescriptor):
             year=int(year), month=int(month), day=int(day))
 
     def clean(self, value):
-        return super().clean('-'.join(
-            [str(value.year), str(value.month), str(value.day)]))
+        return super().clean(value.strftime('%Y-%m-%d'))
 
 
 class FloatOption(OptionDescriptor):
