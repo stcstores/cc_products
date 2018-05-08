@@ -91,6 +91,7 @@ class Variation(BaseProduct):
 
     department = optiondescriptors.OptionDescriptor('Department')
     purchase_price = optiondescriptors.FloatOption('Purchase Price')
+    retail_price = optiondescriptors.FloatOption('Retail Price')
     supplier_sku = optiondescriptors.OptionDescriptor('Supplier SKU')
     brand = optiondescriptors.OptionDescriptor('Brand')
     manufacturer = optiondescriptors.OptionDescriptor('Manufacturer')
