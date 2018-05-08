@@ -89,6 +89,10 @@ class RangeOptions(OptionList):
     def __repr__(self):
         return self.selected_options.__repr__()
 
+    def __iter__(self):
+        for option in self.options:
+            yield option
+
     @property
     def variation_options(self):
         return [o.name for o in self.options if o.selected]
