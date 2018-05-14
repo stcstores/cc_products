@@ -117,7 +117,7 @@ class Variation(BaseProduct):
     external_product_id = ExternalProductIDDescriptor()
 
     def __init__(self, data, product_range=None):
-        """Initialise hidden attributeds."""
+        """Initialise hidden attributes."""
         self._product_range = product_range
         self._options = None
         self._bays = None

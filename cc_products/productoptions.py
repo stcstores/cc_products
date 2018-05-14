@@ -44,6 +44,10 @@ class VariationOptions(OptionList):
     def __repr__(self):
         return self.names.__repr__()
 
+    def __iter__(self):
+        for option in self.options:
+            yield option.name, option.value
+
     def product_has_option(self, key):
         return key in self.names
 
