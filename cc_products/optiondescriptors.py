@@ -67,7 +67,7 @@ class FloatOption(OptionDescriptor):
 
     def to_python(self, *args, **kwargs):
         value = super().to_python(*args, **kwargs)
-        if value is not None:
+        if not value:
             return float(value)
 
 
