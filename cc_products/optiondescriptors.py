@@ -49,6 +49,23 @@ class PackageTypeOption(OptionDescriptor):
             raise ValueError('"{}" is not a valid package type'.format(value))
 
 
+class GenderOption(OptionDescriptor):
+
+    def __init__(self):
+        super().__init__('Gender')
+
+    def __set__(self, isinstance, value):
+        value = value.strip()
+        valid_values = (
+            isinstance.MENS, isinstance.GIRLS, isinstance.WOMENS,
+            isinstance.BOYS, isinstance.BABY_BOYS, isinstance.BABY_GIRLS,
+            isinstance.UNISEX_BABY)
+        if value in valid_values:
+            super().__set__(value)
+        else:
+            raise ValueError('"{}" is not a valid gender'.format(value))
+
+
 class DateOption(OptionDescriptor):
 
     def to_python(self, *args, **kwargs):

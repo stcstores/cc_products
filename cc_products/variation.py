@@ -89,6 +89,14 @@ class Variation(BaseProduct):
     HEAVY_AND_LARGE = 'Heavy and Large'
     COURIER = 'Courier'
 
+    MENS = 'mens'
+    GIRLS = 'girls'
+    WOMENS = 'womens'
+    BOYS = 'boys'
+    BABY_BOYS = 'baby-boys'
+    BABY_GIRLS = 'baby-girls'
+    UNISEX_BABY = 'unisex-baby'
+
     department = optiondescriptors.OptionDescriptor('Department')
     purchase_price = optiondescriptors.FloatOption('Purchase Price')
     retail_price = optiondescriptors.FloatOption('Retail Price')
@@ -108,6 +116,7 @@ class Variation(BaseProduct):
         'Discontinued', true='Discontinued', false='Not Discontinued')
     amazon_bullets = optiondescriptors.ListOption('Amazon Bullets')
     amazon_search_terms = optiondescriptors.ListOption('Amazon Search Terms')
+    gender = optiondescriptors.OptionDescriptor('Gender')
     vat_rate = VAT()
     weight = WeightDescriptor()
     length = LengthDescriptor()
