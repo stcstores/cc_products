@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Setup for CC Products."""
 
 from setuptools import find_packages, setup
 
@@ -12,4 +13,4 @@ setup(
     keywords=['table', 'csv', 'simple'],
     install_requires=[],
     packages=find_packages(),
-    )
+)

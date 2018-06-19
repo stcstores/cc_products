@@ -40,7 +40,8 @@ class ProductRange(BaseProduct):
         self.grouped = bool(data['Grouped'])
         self.products = [
             Variation.create_from_range(product_data, product_range=self)
-            for product_data in data['Products']]
+            for product_data in data['Products']
+        ]
 
     @property
     def department(self):
@@ -145,9 +146,12 @@ class ProductRange(BaseProduct):
 
     def add_product(self, barcode, description, vat_rate):
         """Create a new product belonging to this range."""
-        from . functions import get_product
+        from .functions import get_product
         product_id = CCAPI.create_product(
-            self.id, self.name, barcode, description=description,
+            self.id,
+            self.name,
+            barcode,
+            description=description,
             vat_rate=vat_rate)
         return get_product(product_id)
 

@@ -268,7 +268,7 @@ class Variation(BaseProduct):
     def product_range(self):
         """Return the Product Range to whicth this product belongs."""
         if self._product_range is None:
-            from . functions import get_range
+            from .functions import get_range
             self._product_range = get_range(self.range_id)
         return self._product_range
 
@@ -336,5 +336,8 @@ class Variation(BaseProduct):
         for link in factory_links:
             link.delete()
         return CCAPI.update_product_factory_link(
-            product_id=self.id, factory_id=factory_id, dropship=dropship,
-            supplier_sku=supplier_sku, price=price)
+            product_id=self.id,
+            factory_id=factory_id,
+            dropship=dropship,
+            supplier_sku=supplier_sku,
+            price=price)

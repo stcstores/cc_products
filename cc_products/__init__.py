@@ -1,8 +1,8 @@
 """
-cc_products package.
+CC Products package.
 
 Provides tools for easiliy working with Cloud Commerce Products.
 """
 
-from . variation import Variation  # NOQA
-from . functions import *  # NOQA
+from .variation import Variation  # NOQA
+from .functions import *  # NOQA

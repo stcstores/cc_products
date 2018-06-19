@@ -1,14 +1,15 @@
 """Descriptors for Product Options."""
 
-
 import datetime
 
 from . import exceptions
 
 
 class OptionDescriptor:
+    """Descriptor class for Product Options."""
 
     def __init__(self, option_name):
+        """Set Product Option name."""
         self.option_name = option_name
 
     def __get__(self, instance, owner):
@@ -21,18 +22,22 @@ class OptionDescriptor:
         self.__set__(instance, '')
 
     def to_python(self, instance, owner):
+        """Return Product Option value in the correct type for python."""
         if self.option_name not in instance.options:
             return None
         value = instance.options[self.option_name]
         return value
 
     def clean(self, value):
+        """Format value for storage as a Product Option in Cloud Commerce."""
         return str(value)
 
 
 class PackageTypeOption(OptionDescriptor):
+    """Product Option Descriptor for the Package Type Product Option."""
 
     def __init__(self):
+        """Set product option name."""
         super().__init__('Package Type')
 
     def __set__(self, instance, value):
@@ -50,8 +55,10 @@ class PackageTypeOption(OptionDescriptor):
 
 
 class GenderOption(OptionDescriptor):
+    """Product Option Descriptor for Gender."""
 
     def __init__(self):
+        """Set product option name."""
         super().__init__('Gender')
 
     def __set__(self, isinstance, value):
@@ -67,35 +74,49 @@ class GenderOption(OptionDescriptor):
 
 
 class DateOption(OptionDescriptor):
+    """Product Option Descriptor for Product Options containing dates."""
 
     def to_python(self, *args, **kwargs):
+        """Return Product Option value as datetime.datetime."""
         value = super().to_python(*args, **kwargs)
         if value is None:
             return None
         year, month, day = value.split('-')
-        return datetime.date(
-            year=int(year), month=int(month), day=int(day))
+        return datetime.date(year=int(year), month=int(month), day=int(day))
 
     def clean(self, value):
+        """Return value as a string containting a formatted date."""
         return super().clean(value.strftime('%Y-%m-%d'))
 
 
 class FloatOption(OptionDescriptor):
+    """Product Option Descriptor for Product Options containing floats."""
 
     def to_python(self, *args, **kwargs):
+        """Return Product Option value as a float."""
         value = super().to_python(*args, **kwargs)
         if bool(value):
             return float(value)
 
 
 class BoolOption(OptionDescriptor):
+    """Product Option Descriptor for boolean product options."""
 
     def __init__(self, option_name, true=None, false=None):
+        """
+        Set true, false and option name attributes.
+
+        Args:
+            option_name: Name of the Product Option.
+            true: Value to return if Product Option Value is True.
+            false: Value to return if Product Option Value is False.
+        """
         self.true = true
         self.false = false
         super().__init__(option_name)
 
     def to_python(self, *args, **kwargs):
+        """Return Product Option value as a bool."""
         value = super().to_python(*args, **kwargs)
         if value is None or value == self.false:
             return False
@@ -104,22 +125,33 @@ class BoolOption(OptionDescriptor):
         raise exceptions.OptionValueNotRecognised(value)
 
     def clean(self, value):
+        """Return self.true if value is True, else False."""
         if value is True:
             return self.true
         return super().clean(self.false)
 
 
 class ListOption(OptionDescriptor):
+    """
+    Product Option Descriptor for product options containing multiple values.
+
+    Args:
+        option_name: The name of the Product Option.
+        delimiter: Character used to delimit listed values. Default: '|'.
+    """
 
     def __init__(self, option_name, delimiter='|'):
+        """Set delimiter."""
         self.delimiter = delimiter
         super().__init__(option_name)
 
     def to_python(self, *args, **kwargs):
+        """Return list containing Product Option values."""
         value = super().to_python(*args, **kwargs)
         if value is None:
             return []
         return value.split(self.delimiter)
 
     def clean(self, value):
+        """Return values as a delimited string."""
         return super().clean(self.delimiter.join([str(v) for v in value]))
