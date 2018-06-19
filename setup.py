@@ -1,16 +1,27 @@
 #!/usr/bin/env python
 """Setup for CC Products."""
 
-from setuptools import find_packages, setup
+import os
 
-setup(
-    name='cc_products',
-    version='1.0',
-    description='Cloud Commerce product management',
-    author='Luke Shiner',
-    author_email='luke@lukeshiner.com',
-    url='http://github.com/stcstores/cc_products',
-    keywords=['table', 'csv', 'simple'],
+import setuptools
+
+with open("README.rst", "r") as readme:
+    long_description = readme.read()
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+about = {}
+with open(os.path.join(here, 'cc_products', '__version__.py'), 'r') as f:
+    exec(f.read(), about)
+
+setuptools.setup(
+    name=about['__title__'],
+    version=about['__version__'],
+    description=about['__description__'],
+    long_description=long_description,
+    url=about['__url__'],
+    author=about['__author__'],
+    author_email=about['__author_email__'],
     install_requires=[],
-    packages=find_packages(),
+    packages=setuptools.find_packages(),
 )
