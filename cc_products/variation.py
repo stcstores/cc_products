@@ -209,8 +209,7 @@ class Variation(BaseProduct):
     @barcode.setter
     def barcode(self, barcode):
         """Set the barcode for the product."""
-        #  TODO
-        pass
+        CCAPI.set_product_barcode(barcode, self.id)
 
     @property
     def description(self):
