@@ -95,8 +95,10 @@ class FloatOption(OptionDescriptor):
     def to_python(self, *args, **kwargs):
         """Return Product Option value as a float."""
         value = super().to_python(*args, **kwargs)
-        if bool(value):
+        try:
             return float(value)
+        except (TypeError, ValueError):
+            return None
 
 
 class BoolOption(OptionDescriptor):
