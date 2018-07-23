@@ -201,7 +201,8 @@ class RangeOption:
             CCAPI.add_option_to_product(
                 range_id=self.product_range.id, option_id=self.id)
         else:
-            CCAPI.remove_option_from_product(self.product_range.id, self.id)
+            CCAPI.remove_option_from_product(
+                range_id=self.product_range.id, option_id=self.id)
         for product in self.product_range:
             product._options = None
         self._selected = value
