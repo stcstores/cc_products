@@ -5,7 +5,7 @@ Wrapper for Cloud Commerce Products.
 """
 
 from ccapi import CCAPI, VatRates
-from ccapi.inventoryitems import Factory
+from ccapi.cc_objects import Factory
 
 from . import exceptions, optiondescriptors, productoptions
 from .baseproduct import BaseProduct
