@@ -234,7 +234,8 @@ class Variation(BaseProduct):
     @handling_time.setter
     def handling_time(self, handling_time):
         """Set the handling time for the product."""
-        CCAPI.set_product_handling_time(self.id, handling_time)
+        CCAPI.set_product_handling_time(
+            product_id=self.id, handling_time=handling_time)
         self._handling_time = handling_time
 
     @property
