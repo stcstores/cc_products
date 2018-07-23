@@ -227,7 +227,7 @@ class Variation(BaseProduct):
         """Set the description of the product."""
         if value is None or value == '':
             value = self.name
-        CCAPI.set_product_description(value, [self.id])
+        CCAPI.set_product_description(product_ids=[self.id], description=value)
         self._description = value
 
     @property

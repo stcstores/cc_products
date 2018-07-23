@@ -71,7 +71,7 @@ class ProductRange(BaseProduct):
     def description(self, description):
         """Set the description for the Range."""
         CCAPI.set_product_description(
-            description, [p.id for p in self.products])
+            product_ids=[p.id for p in self.products], description=description)
         self._description = description
 
     @property
