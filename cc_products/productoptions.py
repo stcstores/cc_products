@@ -54,7 +54,10 @@ class VariationOptions(OptionList):
             range_option.selected = True
             option = range_option
         value_id = CCAPI.get_option_value_id(option.id, value, create=True)
-        CCAPI.set_product_option_value([self.product.id], option.id, value_id)
+        CCAPI.set_product_option_value(
+            product_ids=[self.product.id],
+            option_id=option.id,
+            option_value_id=value_id)
         self._options = None
 
     def __repr__(self):
