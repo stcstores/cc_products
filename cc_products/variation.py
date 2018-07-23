@@ -261,7 +261,7 @@ class Variation(BaseProduct):
     @price.setter
     def price(self, price):
         """Set the base price for the product."""
-        CCAPI.set_product_base_price(self.id, price)
+        CCAPI.set_product_base_price(product_id=self.id, price=price)
         self._price = price
 
     @property
