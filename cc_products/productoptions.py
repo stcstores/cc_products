@@ -224,5 +224,6 @@ class RangeOption:
         value = bool(value)
         if value == self._variable:
             return
-        CCAPI.set_range_option_drop_down(self.product_range.id, self.id, value)
+        CCAPI.set_range_option_drop_down(
+            range_id=self.product_range.id, option_id=self.id, drop_down=value)
         self._variable = value
