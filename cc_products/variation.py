@@ -5,7 +5,7 @@ Wrapper for Cloud Commerce Products.
 """
 
 from ccapi import CCAPI, VatRates
-from ccapi.inventoryitems import Factory
+from ccapi.cc_objects import Factory
 
 from . import exceptions, optiondescriptors, productoptions
 from .baseproduct import BaseProduct
@@ -24,7 +24,7 @@ class VAT:
             vat_rate_id = VatRates.get_vat_rate_id_by_rate(value)
         except KeyError:
             raise Exception('{}% is not a valid VAT rate.'.format(value))
-        CCAPI.set_product_vat_rate([instance.id], value)
+        CCAPI.set_product_vat_rate(product_ids=[instance.id], vat_rate=value)
         instance._vat_rate_id = vat_rate_id
 
 
@@ -40,9 +40,13 @@ class ProductScopeDescriptor:
     def __set__(self, instance, value):
         setattr(instance, self.instance_attr, value)
         CCAPI.set_product_scope(
-            instance.id, instance.weight, instance.height, instance.length,
-            instance.width, instance.large_letter_compatible,
-            instance.external_product_id)
+            product_id=instance.id,
+            weight=instance.weight,
+            height=instance.height,
+            length=instance.length,
+            width=instance.width,
+            large_letter_compatible=instance.large_letter_compatible,
+            external_id=instance.external_product_id)
 
 
 class WeightDescriptor(ProductScopeDescriptor):
@@ -209,7 +213,7 @@ class Variation(BaseProduct):
     @barcode.setter
     def barcode(self, barcode):
         """Set the barcode for the product."""
-        CCAPI.set_product_barcode(barcode, self.id)
+        CCAPI.set_product_barcode(product_id=self.id, barcode=barcode)
 
     @property
     def description(self):
@@ -223,7 +227,7 @@ class Variation(BaseProduct):
         """Set the description of the product."""
         if value is None or value == '':
             value = self.name
-        CCAPI.set_product_description(value, [self.id])
+        CCAPI.set_product_description(product_ids=[self.id], description=value)
         self._description = value
 
     @property
@@ -234,7 +238,8 @@ class Variation(BaseProduct):
     @handling_time.setter
     def handling_time(self, handling_time):
         """Set the handling time for the product."""
-        CCAPI.set_product_handling_time(self.id, handling_time)
+        CCAPI.set_product_handling_time(
+            product_id=self.id, handling_time=handling_time)
         self._handling_time = handling_time
 
     @property
@@ -260,7 +265,7 @@ class Variation(BaseProduct):
     @price.setter
     def price(self, price):
         """Set the base price for the product."""
-        CCAPI.set_product_base_price(self.id, price)
+        CCAPI.set_product_base_price(product_id=self.id, price=price)
         self._price = price
 
     @property
@@ -280,7 +285,9 @@ class Variation(BaseProduct):
     def stock_level(self, new_stock_level):
         """Update the stock level of the product."""
         CCAPI.update_product_stock_level(
-            self.id, new_stock_level, self._stock_level)
+            product_id=self.id,
+            new_stock_level=new_stock_level,
+            old_stock_level=self._stock_level)
         self._stock_level = new_stock_level
 
     @property

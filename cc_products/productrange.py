@@ -71,7 +71,7 @@ class ProductRange(BaseProduct):
     def description(self, description):
         """Set the description for the Range."""
         CCAPI.set_product_description(
-            description, [p.id for p in self.products])
+            product_ids=[p.id for p in self.products], description=description)
         self._description = description
 
     @property
@@ -112,7 +112,8 @@ class ProductRange(BaseProduct):
 
     @name.setter
     def name(self, name):
-        CCAPI.set_product_name(name, [p.id for p in self.products])
+        CCAPI.set_product_name(
+            product_ids=[p.id for p in self.products], name=name)
         CCAPI.update_range_settings(
             self.id,
             current_name=self.name,
@@ -148,9 +149,9 @@ class ProductRange(BaseProduct):
         """Create a new product belonging to this range."""
         from .functions import get_product
         product_id = CCAPI.create_product(
-            self.id,
-            self.name,
-            barcode,
+            range_id=self.id,
+            name=self.name,
+            barcode=barcode,
             description=description,
             vat_rate=vat_rate)
         return get_product(product_id)
