@@ -112,7 +112,8 @@ class ProductRange(BaseProduct):
 
     @name.setter
     def name(self, name):
-        CCAPI.set_product_name(name, [p.id for p in self.products])
+        CCAPI.set_product_name(
+            product_ids=[p.id for p in self.products], name=name)
         CCAPI.update_range_settings(
             self.id,
             current_name=self.name,
