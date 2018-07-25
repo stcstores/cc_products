@@ -149,9 +149,9 @@ class ProductRange(BaseProduct):
         """Create a new product belonging to this range."""
         from .functions import get_product
         product_id = CCAPI.create_product(
-            self.id,
-            self.name,
-            barcode,
+            range_id=self.id,
+            name=self.name,
+            barcode=barcode,
             description=description,
             vat_rate=vat_rate)
         return get_product(product_id)
