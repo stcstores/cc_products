@@ -54,7 +54,10 @@ class VariationOptions(OptionList):
             range_option.selected = True
             option = range_option
         value_id = CCAPI.get_option_value_id(option.id, value, create=True)
-        CCAPI.set_product_option_value([self.product.id], option.id, value_id)
+        CCAPI.set_product_option_value(
+            product_ids=[self.product.id],
+            option_id=option.id,
+            option_value_id=value_id)
         self._options = None
 
     def __repr__(self):
@@ -195,9 +198,11 @@ class RangeOption:
         """
         value = bool(selected)
         if value:
-            CCAPI.add_option_to_product(self.product_range.id, self.id)
+            CCAPI.add_option_to_product(
+                range_id=self.product_range.id, option_id=self.id)
         else:
-            CCAPI.remove_option_from_product(self.product_range.id, self.id)
+            CCAPI.remove_option_from_product(
+                range_id=self.product_range.id, option_id=self.id)
         for product in self.product_range:
             product._options = None
         self._selected = value
@@ -219,5 +224,6 @@ class RangeOption:
         value = bool(value)
         if value == self._variable:
             return
-        CCAPI.set_range_option_drop_down(self.product_range.id, self.id, value)
+        CCAPI.set_range_option_drop_down(
+            range_id=self.product_range.id, option_id=self.id, drop_down=value)
         self._variable = value
