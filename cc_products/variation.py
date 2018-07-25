@@ -24,7 +24,7 @@ class VAT:
             vat_rate_id = VatRates.get_vat_rate_id_by_rate(value)
         except KeyError:
             raise Exception('{}% is not a valid VAT rate.'.format(value))
-        CCAPI.set_product_vat_rate([instance.id], value)
+        CCAPI.set_product_vat_rate(product_ids=[instance.id], vat_rate=value)
         instance._vat_rate_id = vat_rate_id
 
 
