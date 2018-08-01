@@ -19,7 +19,7 @@ class OptionDescriptor:
         instance.options[self.option_name] = self.clean(value)
 
     def __delete__(self, instance):
-        self.__set__(instance, '')
+        self.__set__(instance, "")
 
     def to_python(self, instance, owner):
         """Return Product Option value in the correct type for python."""
@@ -38,12 +38,15 @@ class PackageTypeOption(OptionDescriptor):
 
     def __init__(self):
         """Set product option name."""
-        super().__init__('Package Type')
+        super().__init__("Package Type")
 
     def __set__(self, instance, value):
         value = value.strip()
         non_large_letter_values = (
-            instance.PACKET, instance.HEAVY_AND_LARGE, instance.COURIER)
+            instance.PACKET,
+            instance.HEAVY_AND_LARGE,
+            instance.COURIER,
+        )
         if value == instance.LARGE_LETTER:
             super().__set__(instance, instance.LARGE_LETTER)
             instance.large_letter_compatible = True
@@ -59,14 +62,19 @@ class GenderOption(OptionDescriptor):
 
     def __init__(self):
         """Set product option name."""
-        super().__init__('Gender')
+        super().__init__("Gender")
 
     def __set__(self, isinstance, value):
         value = value.strip()
         valid_values = (
-            isinstance.MENS, isinstance.GIRLS, isinstance.WOMENS,
-            isinstance.BOYS, isinstance.BABY_BOYS, isinstance.BABY_GIRLS,
-            isinstance.UNISEX_BABY)
+            isinstance.MENS,
+            isinstance.GIRLS,
+            isinstance.WOMENS,
+            isinstance.BOYS,
+            isinstance.BABY_BOYS,
+            isinstance.BABY_GIRLS,
+            isinstance.UNISEX_BABY,
+        )
         if value in valid_values:
             super().__set__(value)
         else:
@@ -81,12 +89,12 @@ class DateOption(OptionDescriptor):
         value = super().to_python(*args, **kwargs)
         if value is None:
             return None
-        year, month, day = value.split('-')
+        year, month, day = value.split("-")
         return datetime.date(year=int(year), month=int(month), day=int(day))
 
     def clean(self, value):
         """Return value as a string containting a formatted date."""
-        return super().clean(value.strftime('%Y-%m-%d'))
+        return super().clean(value.strftime("%Y-%m-%d"))
 
 
 class FloatOption(OptionDescriptor):
@@ -142,7 +150,7 @@ class ListOption(OptionDescriptor):
         delimiter: Character used to delimit listed values. Default: '|'.
     """
 
-    def __init__(self, option_name, delimiter='|'):
+    def __init__(self, option_name, delimiter="|"):
         """Set delimiter."""
         self.delimiter = delimiter
         super().__init__(option_name)
