@@ -55,9 +55,8 @@ class VariationOptions(OptionList):
             option = range_option
         value_id = CCAPI.get_option_value_id(option.id, value, create=True)
         CCAPI.set_product_option_value(
-            product_ids=[self.product.id],
-            option_id=option.id,
-            option_value_id=value_id)
+            product_ids=[self.product.id], option_id=option.id, option_value_id=value_id
+        )
         self._options = None
 
     def __repr__(self):
@@ -98,7 +97,7 @@ class VariationOption:
             self.value = option.value.value
 
     def __repr__(self):
-        return '{}: {}'.format(self.name, self.value)
+        return "{}: {}".format(self.name, self.value)
 
 
 class RangeOptions(OptionList):
@@ -172,7 +171,7 @@ class RangeOption:
         """
         self.product_range = product_range
         self.id = product_option.id
-        self.name = product_option.name.replace(' (Master)', '')
+        self.name = product_option.name.replace(" (Master)", "")
         if shop_option is not None:
             self._selected = True
             self._variable = shop_option.is_web_shop_select
@@ -199,10 +198,12 @@ class RangeOption:
         value = bool(selected)
         if value:
             CCAPI.add_option_to_product(
-                range_id=self.product_range.id, option_id=self.id)
+                range_id=self.product_range.id, option_id=self.id
+            )
         else:
             CCAPI.remove_option_from_product(
-                range_id=self.product_range.id, option_id=self.id)
+                range_id=self.product_range.id, option_id=self.id
+            )
         for product in self.product_range:
             product._options = None
         self._selected = value
@@ -225,5 +226,6 @@ class RangeOption:
         if value == self._variable:
             return
         CCAPI.set_range_option_drop_down(
-            range_id=self.product_range.id, option_id=self.id, drop_down=value)
+            range_id=self.product_range.id, option_id=self.id, drop_down=value
+        )
         self._variable = value
