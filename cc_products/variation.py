@@ -90,6 +90,7 @@ class Variation(BaseProduct):
     """Wrapper for Cloud Commerce Products."""
 
     LARGE_LETTER = "Large Letter"
+    LARGE_LETTER_SINGLE = "Large Letter (Single)"
     PACKET = "Packet"
     HEAVY_AND_LARGE = "Heavy and Large"
     COURIER = "Courier"

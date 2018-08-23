@@ -47,8 +47,8 @@ class PackageTypeOption(OptionDescriptor):
             instance.HEAVY_AND_LARGE,
             instance.COURIER,
         )
-        if value == instance.LARGE_LETTER:
-            super().__set__(instance, instance.LARGE_LETTER)
+        if value in (instance.LARGE_LETTER, instance.LARGE_LETTER_SINGLE):
+            super().__set__(instance, value)
             instance.large_letter_compatible = True
         elif value in non_large_letter_values:
             super().__set__(instance, value)
