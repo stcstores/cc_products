@@ -30,17 +30,17 @@ class ProductRange(BaseProduct):
     def load_from_cc_data(self, data):
         """Set attributes from Cloud Commerce API data."""
         self.raw = data
-        self.id = data['ID']
-        self._name = data['Name']
-        self.sku = data['ManufacturerSKU']
-        self._end_of_line = data['EndOfLine']
+        self.id = data["ID"]
+        self._name = data["Name"]
+        self.sku = data["ManufacturerSKU"]
+        self._end_of_line = data["EndOfLine"]
         self._description = None
-        self.thumbnail = data['ThumbNail']
-        self.pre_order = bool(data['PreOrder'])
-        self.grouped = bool(data['Grouped'])
+        self.thumbnail = data["ThumbNail"]
+        self.pre_order = bool(data["PreOrder"])
+        self.grouped = bool(data["Grouped"])
         self.products = [
             Variation.create_from_range(product_data, product_range=self)
-            for product_data in data['Products']
+            for product_data in data["Products"]
         ]
 
     @property
@@ -71,7 +71,8 @@ class ProductRange(BaseProduct):
     def description(self, description):
         """Set the description for the Range."""
         CCAPI.set_product_description(
-            product_ids=[p.id for p in self.products], description=description)
+            product_ids=[p.id for p in self.products], description=description
+        )
         self._description = description
 
     @property
@@ -100,7 +101,8 @@ class ProductRange(BaseProduct):
             new_end_of_line=bool(value),
             new_pre_order=self.pre_order,
             new_group_items=self.grouped,
-            channels=[])
+            channels=[],
+        )
         self._end_of_line = bool(value)
         for product in self.products:
             product.discontinued = True
@@ -112,8 +114,7 @@ class ProductRange(BaseProduct):
 
     @name.setter
     def name(self, name):
-        CCAPI.set_product_name(
-            product_ids=[p.id for p in self.products], name=name)
+        CCAPI.set_product_name(product_ids=[p.id for p in self.products], name=name)
         CCAPI.update_range_settings(
             self.id,
             current_name=self.name,
@@ -126,7 +127,8 @@ class ProductRange(BaseProduct):
             new_end_of_line=self.end_of_line,
             new_pre_order=self.pre_order,
             new_group_items=self.grouped,
-            channels=self._get_sales_channel_ids())
+            channels=self._get_sales_channel_ids(),
+        )
 
     @property
     def options(self):
@@ -148,12 +150,14 @@ class ProductRange(BaseProduct):
     def add_product(self, barcode, description, vat_rate):
         """Create a new product belonging to this range."""
         from .functions import get_product
+
         product_id = CCAPI.create_product(
             range_id=self.id,
             name=self.name,
             barcode=barcode,
             description=description,
-            vat_rate=vat_rate)
+            vat_rate=vat_rate,
+        )
         return get_product(product_id)
 
     def delete(self):
