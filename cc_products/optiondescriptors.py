@@ -64,16 +64,16 @@ class GenderOption(OptionDescriptor):
         """Set product option name."""
         super().__init__("Gender")
 
-    def __set__(self, isinstance, value):
+    def __set__(self, instance, value):
         value = value.strip()
         valid_values = (
-            isinstance.MENS,
-            isinstance.GIRLS,
-            isinstance.WOMENS,
-            isinstance.BOYS,
-            isinstance.BABY_BOYS,
-            isinstance.BABY_GIRLS,
-            isinstance.UNISEX_BABY,
+            instance.MENS,
+            instance.GIRLS,
+            instance.WOMENS,
+            instance.BOYS,
+            instance.BABY_BOYS,
+            instance.BABY_GIRLS,
+            instance.UNISEX_BABY,
         )
         if value in valid_values:
             super().__set__(value)
