@@ -109,6 +109,22 @@ class FloatOption(OptionDescriptor):
             return None
 
 
+class IntegerOption(OptionDescriptor):
+    """Product Option Descriptor for Product Options containing integers."""
+
+    def __set__(self, instance, value):
+        """Save value in an integer form."""
+        super().__set__(instance, value)
+
+    def to_python(self, *args, **kwargs):
+        """Return Product Option value as an integer."""
+        value = super().to_python(*args, **kwargs)
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+
 class BoolOption(OptionDescriptor):
     """Product Option Descriptor for boolean product options."""
 
