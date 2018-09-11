@@ -42,9 +42,9 @@ class ProductScopeDescriptor:
         CCAPI.set_product_scope(
             product_id=instance.id,
             weight=instance.weight,
-            height=instance.height,
-            length=instance.length,
-            width=instance.width,
+            height=instance.cloud_commerce_height,
+            length=instance.cloud_commerce_length,
+            width=instance.cloud_commerce_width,
             large_letter_compatible=instance.large_letter_compatible,
             external_id=instance.external_product_id,
         )
@@ -125,11 +125,15 @@ class Variation(BaseProduct):
     amazon_bullets = optiondescriptors.ListOption("Amazon Bullets")
     amazon_search_terms = optiondescriptors.ListOption("Amazon Search Terms")
     gender = optiondescriptors.OptionDescriptor("Gender")
+    weight = WeightDescriptor()
+    length = optiondescriptors.IntegerOption("Length MM")
+    width = optiondescriptors.IntegerOption("Width MM")
+    height = optiondescriptors.IntegerOption("Height MM")
     vat_rate = VAT()
     weight = WeightDescriptor()
-    length = LengthDescriptor()
-    width = WidthDescriptor()
-    height = HeightDescriptor()
+    cloud_commerce_length = LengthDescriptor()
+    cloud_commerce_width = WidthDescriptor()
+    cloud_commerce_height = HeightDescriptor()
     large_letter_compatible = LargeLetterCompatibleDescriptor()
     external_product_id = ExternalProductIDDescriptor()
 
