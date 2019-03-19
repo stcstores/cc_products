@@ -254,6 +254,13 @@ class Variation(BaseProduct):
         """Return the name of the product."""
         return self._name
 
+    @name.setter
+    def name(self, name):
+        """Set the product's name."""
+        CCAPI.set_product_name(name=name, product_ids=[self.id])
+        self._name = name
+        self.full_name = None
+
     @property
     def options(self):
         """Return the Product Options of the product."""
