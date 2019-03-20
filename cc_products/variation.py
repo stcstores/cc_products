@@ -159,6 +159,7 @@ class Variation(BaseProduct):
         self.full_name = data["FullName"]
         self.sku = data["ManufacturerSKU"]
         self.range_id = data["RangeID"]
+        self.is_multipack = bool(data["ProductType"])
         self.default_image_url = data["defaultImageUrl"]
         self._external_product_id = data["ExternalProductId"]
         self._name = data["Name"]
