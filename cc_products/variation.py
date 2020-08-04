@@ -175,6 +175,7 @@ class Variation(BaseProduct):
         self._handling_time = data["DeliveryLeadTimeDays"]
         self._price = data["BasePrice"]
         self._vat_rate_id = data["VatRateID"]
+        self._hs_code = data["HSCode"]
 
     @classmethod
     def create_from_range(cls, data, product_range):
@@ -213,6 +214,17 @@ class Variation(BaseProduct):
         for bay in bays_to_add:
             CCAPI.add_warehouse_bay_to_product(self.id, bay)
         self._bays = None
+
+    @property
+    def hs_code(self):
+        """Return the product's HS Code."""
+        return self._hs_code
+
+    @hs_code.setter
+    def hs_code(self, hs_code):
+        if self._hs_code is None:
+            self._reload()
+        CCAPI.set_hs_code(product_IDs=[self.id], HS_code=hs_code)
 
     @property
     def barcode(self):
