@@ -224,6 +224,7 @@ class Variation(BaseProduct):
     def hs_code(self, hs_code):
         if self._hs_code is None:
             self._reload()
+        hs_code = f"{int(hs_code):<08d}"
         CCAPI.set_hs_code(product_IDs=[self.id], HS_code=hs_code)
 
     @property
