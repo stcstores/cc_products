@@ -176,6 +176,7 @@ class Variation(BaseProduct):
         self._price = data["BasePrice"]
         self._vat_rate_id = data["VatRateID"]
         self._hs_code = data["HSCode"]
+        self._country_of_origin_id = data["CountryOfOriginId"]
 
     @classmethod
     def create_from_range(cls, data, product_range):
@@ -218,6 +219,8 @@ class Variation(BaseProduct):
     @property
     def hs_code(self):
         """Return the product's HS Code."""
+        if self._hs_code is None:
+            self._reload()
         return self._hs_code
 
     @hs_code.setter
@@ -226,6 +229,18 @@ class Variation(BaseProduct):
             self._reload()
         hs_code = f"{int(hs_code):<08d}"
         CCAPI.set_hs_code(product_IDs=[self.id], HS_code=hs_code)
+
+    @property
+    def country_of_origin(self):
+        """Return the product's country of origin ID."""
+        if self._country_of_origin_id is None:
+            self._reload()
+        return self._country_of_origin_id
+
+    @country_of_origin.setter
+    def country_of_origin(self, country_id):
+        CCAPI.set_country_of_origin(product_id=self.id, country_id=country_id)
+        self._country_of_origin_id = country_id
 
     @property
     def barcode(self):
