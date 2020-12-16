@@ -334,6 +334,10 @@ class Variation(BaseProduct):
         )
         self._stock_level = new_stock_level
 
+    def get_pending_stock(self):
+        """Return the pending stock level of the product."""
+        return CCAPI.get_pending_stock(self.id)
+
     @property
     def supplier(self):
         """
