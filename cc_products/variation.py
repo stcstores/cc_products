@@ -394,6 +394,6 @@ class Variation(BaseProduct):
             product_id=self.id,
             factory_id=factory_id,
             dropship=dropship,
-            supplier_sku=supplier_sku,
+            supplier_sku=supplier_sku or self.supplier_sku,
             price=price,
         )
