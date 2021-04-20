@@ -129,6 +129,7 @@ class Variation(BaseProduct):
     length = optiondescriptors.IntegerOption("Length MM")
     width = optiondescriptors.IntegerOption("Width MM")
     height = optiondescriptors.IntegerOption("Height MM")
+    created_by = optiondescriptors.OptionDescriptor("Created By")
     vat_rate = VAT()
     weight = WeightDescriptor()
     cloud_commerce_length = LengthDescriptor()
