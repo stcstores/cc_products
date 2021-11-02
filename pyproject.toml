@@ -10,7 +10,7 @@ python = "^3.10"
 ccapi = {git = "https://github.com/stcstores/ccapi.git"}
 
 [tool.poetry.dev-dependencies]
-flake8 = "^3.8.3"
+flake8 = "^4.0.1"
 black = "^19.10b0"
 isort = "^5.2.2"
 flake8-docstrings = "^1.6.0"
