@@ -11,7 +11,7 @@ ccapi = {git = "https://github.com/stcstores/ccapi.git"}
 
 [tool.poetry.dev-dependencies]
 flake8 = "^4.0.1"
-black = "^21.10b0"
+black = "^21.11b1"
 isort = "^5.10.1"
 flake8-docstrings = "^1.6.0"
 
