@@ -1,9 +1,27 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 
 from cc_products import exceptions
 from cc_products.productrange import ProductRange
+
+
+@pytest.fixture
+def mock_CCAPI():
+    with patch("cc_products.productrange.CCAPI") as mock:
+        yield mock
+
+
+@pytest.fixture
+def channel_ids():
+    return ["321654897645", "1796465168964"]
+
+
+@pytest.fixture
+def mock_channel_ids(mock_CCAPI, channel_ids):
+    channel_ids = [Mock(id=channel_id) for channel_id in channel_ids]
+    mock_CCAPI.get_sales_channels_for_range.return_value = channel_ids
+    return channel_ids
 
 
 @pytest.fixture
@@ -161,3 +179,128 @@ def test_get_description_returns__description_when_not_none(product_range):
     product_range.products = [Mock(description="Test Product Description")]
     product_range._description = range_description
     assert product_range.description == range_description
+
+
+def test_set_description_proerty_sets__description(mock_CCAPI, product_range):
+    description = "Test Description"
+    product_range._description = None
+    product_range.description = description
+    assert product_range._description == description
+
+
+def test_set_description_property_updates_products(mock_CCAPI, product_range):
+    description = "Test Description"
+    product_ids = ["123456798", "32164597", "147258369"]
+    product_range.products = [Mock(id=product_id) for product_id in product_ids]
+    product_range.description = description
+    mock_CCAPI.set_product_description.assert_called_once_with(
+        product_ids=product_ids, description=description
+    )
+
+
+def test_get_end_of_line_property(product_range):
+    sential = ...
+    product_range._end_of_line = sential
+    assert product_range.end_of_line is sential
+
+
+def test_end_of_line_property_setter_updates_products(mock_CCAPI, product_range):
+    products = [Mock(discontinued=False) for i in range(3)]
+    product_range.products = products
+    product_range.end_of_line = True
+    for product in products:
+        assert product.discontinued is True
+
+
+def test_end_of_line_property_setter_updates__end_of_line(mock_CCAPI, product_range):
+    product_range._end_of_line = False
+    product_range.end_of_line = True
+    assert product_range._end_of_line is True
+
+
+def test_end_of_line_property_setter_sends_request(mock_CCAPI, product_range):
+    product_range._end_of_line = False
+    product_range.end_of_line = True
+    mock_CCAPI.update_range_settings.assert_called_once_with(
+        product_range.id,
+        current_name=product_range.name,
+        current_sku=product_range.sku,
+        current_end_of_line=False,
+        current_pre_order=product_range.pre_order,
+        current_group_items=product_range.grouped,
+        new_name=product_range.name,
+        new_sku=product_range.sku,
+        new_end_of_line=True,
+        new_pre_order=product_range.pre_order,
+        new_group_items=product_range.grouped,
+        channels=[],
+    )
+
+
+def test_get_name_property(product_range):
+    sential = ...
+    product_range._name = sential
+    assert product_range.name is sential
+
+
+def test_name_property_setter_updates_product_names(mock_CCAPI, product_range):
+    new_name = "New Product Name"
+    product_ids = ["13245679", "31654987", "1564891"]
+    product_range.products = [Mock(id=product_id) for product_id in product_ids]
+    product_range.name = new_name
+    mock_CCAPI.set_product_name.assert_called_once_with(
+        product_ids=product_ids, name=new_name
+    )
+
+
+def test_name_property_setter_updates_range_name(
+    mock_CCAPI, channel_ids, product_range
+):
+    product_range._get_sales_channel_ids = Mock(return_value=channel_ids)
+    new_name = "New Product Name"
+    product_range.name = new_name
+    mock_CCAPI.update_range_settings.assert_called_once_with(
+        product_range.id,
+        current_name=product_range.name,
+        current_sku=product_range.sku,
+        current_end_of_line=False,
+        current_pre_order=product_range.pre_order,
+        current_group_items=product_range.grouped,
+        new_name=new_name,
+        new_sku=product_range.sku,
+        new_end_of_line=product_range.end_of_line,
+        new_pre_order=product_range.pre_order,
+        new_group_items=product_range.grouped,
+        channels=channel_ids,
+    )
+
+
+def test_get_options_property_when__options_is_set(product_range):
+    sential = ...
+    product_range._options = sential
+    assert product_range.options is sential
+
+
+def test_get_options_property__sets__options_when__options_is_None(
+    mock_CCAPI, product_range
+):
+    sential = ...
+    product_range._options = None
+    with patch(
+        "cc_products.productrange.productoptions.RangeOptions"
+    ) as mock_RangeOptions:
+        mock_RangeOptions.return_value = sential
+        assert product_range.options is sential
+        assert product_range._options is sential
+
+
+def test_selected_options_property(product_range):
+    sential = ...
+    product_range._options = Mock(selected_options=sential)
+    assert product_range.selected_options is sential
+
+
+def test_variable_options_property(product_range):
+    sential = ...
+    product_range._options = Mock(variable_options=sential)
+    assert product_range.variable_options is sential

@@ -49,10 +49,9 @@ class ProductRange(BaseProduct):
         departments = [p.department for p in self.products if p.department]
         if len(departments) == 0:
             raise exceptions.NoDepartmentError(self)
-        if len(departments) == len(self.products):
-            if all([d == departments[0] for d in departments]):
-                return departments[0]
-        raise exceptions.MixedDepartmentsError(self)
+        if len(departments) != len(self.products) or len(set(departments)) != 1:
+            raise exceptions.MixedDepartmentsError(self)
+        return departments[0]
 
     @department.setter
     def department(self, department):
