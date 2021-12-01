@@ -1,16 +1,20 @@
 cc_login.yaml
+.vscode
 
-**__pycache__**
-**.pyc
-**.csv
-**.~lock**
-build/**
+.pytest_cache/
+
+*.pyo
+*.pyc
+env/*
+passenger_wsgi.py
+public/
+
+ccapi_test.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-
-setup.cfg
 
 # C extensions
 *.so
@@ -97,5 +101,4 @@ ENV/
 # Rope project settings
 .ropeproject
 
-test.py
-!order_profit/cc_countries.csv
+!deploy_tools/local_settings.py
